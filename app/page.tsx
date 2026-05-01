@@ -12,11 +12,30 @@ export default async function Home() {
     fetchAllCategories(),
   ]);
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "RIVA",
+    url: "https://itsriva.com",
+    description: "Premium accessories for women & girls in Egypt",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: "https://itsriva.com/shop?q={search_term_string}",
+      "query-input": "required name=search_term_string",
+    },
+  };
+
   return (
-    <HomeContent
-      featured={featured}
-      newArrivals={newArrivals}
-      categories={categories}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <HomeContent
+        featured={featured}
+        newArrivals={newArrivals}
+        categories={categories}
+      />
+    </>
   );
 }

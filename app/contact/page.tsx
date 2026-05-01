@@ -1,6 +1,21 @@
-"use client";
-
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Contact Us",
+  description:
+    "Get in touch with RIVA. Reach us via WhatsApp, email, or Instagram for order inquiries, styling advice, or collaborations. We're here to help!",
+  alternates: {
+    canonical: "/contact",
+  },
+  openGraph: {
+    title: "Contact Us | RIVA",
+    description: "Reach RIVA via WhatsApp, email, or Instagram. We respond within 24 hours.",
+    url: "https://itsriva.com/contact",
+    siteName: "RIVA",
+    type: "website",
+  },
+};
 
 export default function ContactPage() {
   return (

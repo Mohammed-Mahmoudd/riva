@@ -1,0 +1,21 @@
+{
+  "name": "RIVA — Premium Accessories",
+  "short_name": "RIVA",
+  "description": "Premium accessories for women & girls in Egypt",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FCFAF8",
+  "theme_color": "#DDA7A5",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
