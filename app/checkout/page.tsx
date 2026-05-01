@@ -148,7 +148,7 @@ export default function CheckoutPage() {
     const code = couponCodeInput.trim().toUpperCase();
     if (!code) return;
 
-    const found = availableCoupons.find((c) => c.code.toUpperCase() === code);
+    const found = availableCoupons.find((c) => c.code && c.code.toUpperCase() === code);
     if (found) {
       setAppliedCoupon(found);
       setCouponCodeInput("");

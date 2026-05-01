@@ -48,7 +48,7 @@ export default function Navbar() {
             <span key={i} className="flex gap-20">
               <span>✨ Free Shipping on Orders Over EGP 50</span>
               <span>🎀 New Spring Collection Available Now</span>
-              <span>💎 Use Code RIVA20 for 20% Off</span>
+              <span>💎 Use Code RIVA15 for 15% Off</span>
               <span>🌸 Free Gift Wrapping on All Orders</span>
             </span>
           ))}
@@ -58,9 +58,7 @@ export default function Navbar() {
       {/* Main Navbar */}
       <nav
         className={`sticky top-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? "glass shadow-lg py-3"
-            : "bg-white/95 py-4"
+          isScrolled ? "glass shadow-lg py-3" : "bg-white/95 py-4"
         }`}
       >
         <div className="container-riva flex items-center justify-between">
@@ -82,7 +80,10 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 className="relative text-sm font-medium tracking-wide uppercase transition-colors duration-300 hover:text-[var(--riva-rose)] group"
-                style={{ color: "var(--riva-charcoal)", letterSpacing: "0.1em" }}
+                style={{
+                  color: "var(--riva-charcoal)",
+                  letterSpacing: "0.1em",
+                }}
               >
                 {link.label}
                 <span
@@ -281,8 +282,11 @@ export default function Navbar() {
             </p>
             <div className="flex gap-4 mt-3">
               {[
-                { name: "Instagram", href: "https://www.instagram.com/itsriva.m/" },
-                { name: "WhatsApp", href: "https://wa.me/201501685539" }
+                {
+                  name: "Instagram",
+                  href: "https://www.instagram.com/itsriva.m/",
+                },
+                { name: "WhatsApp", href: "https://wa.me/201501685539" },
               ].map((social) => (
                 <a
                   key={social.name}

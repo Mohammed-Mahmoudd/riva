@@ -24,6 +24,8 @@ interface OrderData {
   // Order
   items: OrderItem[]
   subtotal: number
+  discount?: number
+  couponCode?: string | null
   shipping: number
   total: number
   notes?: string
@@ -74,7 +76,7 @@ function formatOrderMessage(order: OrderData): string {
   const itemsList = order.items
     .map(
       (item, i) =>
-        `   ${i + 1}. ${item.name}\n      Qty: ${item.quantity} × $${item.price.toFixed(2)} = $${(item.quantity * item.price).toFixed(2)}\n      Color: ${item.color}`
+        `   ${i + 1}. ${item.name}\n      Qty: ${item.quantity} × EGP ${item.price.toFixed(2)} = EGP ${(item.quantity * item.price).toFixed(2)}${item.color ? `\n      Color: ${item.color}` : ''}`
     )
     .join('\n')
 
@@ -104,9 +106,9 @@ ${itemsList}
 
 ━━━━━━━━━━━━━━━━━━━━
 
-💰 Subtotal: $${order.subtotal.toFixed(2)}
-🚚 Shipping: ${order.shipping === 0 ? 'FREE' : '$' + order.shipping.toFixed(2)}
-<b>💎 Total: $${order.total.toFixed(2)}</b>${order.notes ? `\n\n📝 Notes: ${order.notes}` : ''}
+💰 Subtotal: EGP ${order.subtotal.toFixed(2)}
+${order.discount && order.discount > 0 ? `🎟️ Discount: - EGP ${order.discount.toFixed(2)} ${order.couponCode ? `(Code: ${order.couponCode})` : ''}\n` : ''}🚚 Shipping: ${order.shipping === 0 ? 'FREE' : 'EGP ' + order.shipping.toFixed(2)}
+<b>💎 Total: EGP ${order.total.toFixed(2)}</b>${order.notes ? `\n\n📝 Notes: ${order.notes}` : ''}
 
 ━━━━━━━━━━━━━━━━━━━━
 ⏰ ${new Date().toLocaleString('en-EG', { timeZone: 'Africa/Cairo' })}`
