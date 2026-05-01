@@ -1,10 +1,13 @@
 import { createClient } from 'next-sanity'
 import { NextResponse } from 'next/server'
+import { projectId, dataset, apiVersion } from '../../../sanity/env'
+
+export const dynamic = 'force-dynamic'
 
 const client = createClient({
-  projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
-  dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
-  apiVersion: process.env.NEXT_PUBLIC_SANITY_API_VERSION || '2024-05-01',
+  projectId,
+  dataset,
+  apiVersion,
   useCdn: false,
   token: process.env.SANITY_API_TOKEN,
 })
