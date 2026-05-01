@@ -35,8 +35,8 @@ const PAYMENT_LABELS: Record<string, string> = {
 }
 
 async function sendTelegramMessage(text: string) {
-  const botToken = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
+  const botToken = "8361779053:AAEn8zQOc3g9NgcleB8rR7gTKmvP9dGQf60"
+  const chatId = "8723653493"
 
   if (!botToken || !chatId) {
     console.error('Telegram credentials not configured')
