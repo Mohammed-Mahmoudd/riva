@@ -1,34 +1,193 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
 
+type PaymentMethod = "cod" | "vodafone_cash" | "etisalat_cash";
+
+const paymentMethods: {
+  id: PaymentMethod;
+  label: string;
+  icon: string;
+  description: string;
+  instructions?: string;
+  storeAccount?: string; // The number the customer sends money TO
+  senderFieldLabel?: string; // What we ask the customer for
+}[] = [
+  {
+    id: "cod",
+    label: "Cash on Delivery",
+    icon: "💵",
+    description: "Pay when you receive your order",
+  },
+  {
+    id: "vodafone_cash",
+    label: "Vodafone Cash",
+    icon: "🔴",
+    description: "Send to our Vodafone Cash wallet",
+    storeAccount: "01126633680", // Replace with your actual number
+    instructions:
+      "Transfer the total amount to the number below. Your order will only be shipped after the transfer is verified.",
+    senderFieldLabel: "Your Vodafone Cash Number (Sender)",
+  },
+  {
+    id: "etisalat_cash",
+    label: "Etisalat Cash",
+    icon: "🟢",
+    description: "Send to our Etisalat Cash wallet",
+    storeAccount: "01126633680", // Replace with your actual number
+    instructions:
+      "Transfer the total amount to the number below. Your order will only be shipped after the transfer is verified.",
+    senderFieldLabel: "Your Etisalat Cash Number (Sender)",
+  },
+];
+
 export default function CheckoutPage() {
   const { items, getCartTotal, clearCart } = useCart();
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [orderNumber, setOrderNumber] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("cod");
+
+  // Form state
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    notes: "",
+    senderDetails: "", // Added this to capture their wallet/instapay sender info
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const savedAddress = localStorage.getItem("riva_saved_address");
+    if (savedAddress) {
+      try {
+        setForm((prev) => ({ ...prev, ...JSON.parse(savedAddress), senderDetails: "", notes: "" }));
+      } catch (e) {
+        console.error("Failed to parse saved address");
+      }
+    }
+  }, []);
+
+  const validateField = (field: string, value: string) => {
+    let error = "";
+    if (field === "email" && value && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+      error = "Please enter a valid email address";
+    } else if (field === "phone" && value && !/^01[0-2,5]\d{8}$/.test(value.replace(/\s/g, ''))) {
+      error = "Please enter a valid Egyptian phone number";
+    } else if (field === "firstName" && !value.trim()) {
+      error = "First name is required";
+    } else if (field === "lastName" && !value.trim()) {
+      error = "Last name is required";
+    } else if (field === "address" && !value.trim()) {
+      error = "Address is required";
+    } else if (field === "city" && !value.trim()) {
+      error = "City is required";
+    } else if (field === "state" && !value.trim()) {
+      error = "Governorate is required";
+    }
+    
+    setErrors((prev) => ({ ...prev, [field]: error }));
+    return !error;
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Please enter a valid email address";
+    if (!form.phone || !/^01[0-2,5]\d{8}$/.test(form.phone.replace(/\s/g, ''))) newErrors.phone = "Please enter a valid Egyptian phone number";
+    if (!form.firstName.trim()) newErrors.firstName = "First name is required";
+    if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!form.address.trim()) newErrors.address = "Address is required";
+    if (!form.city.trim()) newErrors.city = "City is required";
+    if (!form.state.trim()) newErrors.state = "Governorate is required";
+    if (selectedPayment !== "cod" && !form.senderDetails.trim()) newErrors.senderDetails = "Sender details are required for this payment method";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const updateField = (field: string, value: string) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+    validateField(field, value);
+  };
 
   const subtotal = getCartTotal();
   const shipping = subtotal > 50 ? 0 : 10;
   const total = subtotal + shipping;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!validateForm()) {
+      setErrorMsg("Please fix the errors in the form before submitting.");
+      return;
+    }
+    
     setIsProcessing(true);
-    // Simulate processing
-    setTimeout(() => {
-      setIsProcessing(false);
+    setErrorMsg("");
+
+    try {
+      const orderData = {
+        ...form,
+        paymentMethod: selectedPayment,
+        items: items.map((item) => ({
+          name: item.product.name,
+          quantity: item.quantity,
+          price: item.product.salePrice || item.product.price,
+          color: item.selectedColor,
+        })),
+        subtotal,
+        shipping,
+        total,
+      };
+
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to place order");
+      }
+
+      // Save address info to local storage for future checkout
+      const { notes, senderDetails, ...addressToSave } = orderData;
+      localStorage.setItem("riva_saved_address", JSON.stringify(addressToSave));
+
+      setOrderNumber(data.orderNumber);
       setOrderPlaced(true);
       clearCart();
-    }, 1500);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
+      setErrorMsg(message);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
+  // ─── Order Success Screen ──────────────────────────────────
   if (orderPlaced) {
+    const paymentInfo = paymentMethods.find((p) => p.id === selectedPayment);
+    const needsTransfer = selectedPayment !== "cod";
+
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-[var(--riva-ivory)] px-6 py-20">
-        <div className="text-center max-w-md w-full animate-fade-in-up bg-white p-10 sm:p-12 rounded-3xl shadow-xl shadow-rose-900/5">
+        <div className="text-center max-w-lg w-full animate-fade-in-up bg-white p-10 sm:p-12 rounded-3xl shadow-xl shadow-rose-900/5">
           <div className="w-20 h-20 bg-[var(--riva-blush)] rounded-full flex items-center justify-center mx-auto mb-6">
             <svg
               width="40"
@@ -45,7 +204,7 @@ export default function CheckoutPage() {
             </svg>
           </div>
           <h1
-            className="text-3xl font-bold mb-4"
+            className="text-3xl font-bold mb-2"
             style={{
               fontFamily: "var(--font-heading)",
               color: "var(--riva-charcoal)",
@@ -53,9 +212,38 @@ export default function CheckoutPage() {
           >
             Order Confirmed!
           </h1>
+          <p
+            className="text-sm font-medium mb-6"
+            style={{ color: "var(--riva-rose-dark)" }}
+          >
+            Order #{orderNumber}
+          </p>
+
+          {needsTransfer && (
+            <div
+              className="bg-[var(--riva-ivory)] rounded-2xl p-6 mb-6 text-left"
+              style={{ border: "1px dashed var(--riva-rose)" }}
+            >
+              <p
+                className="text-sm font-semibold mb-3"
+                style={{ color: "var(--riva-charcoal)" }}
+              >
+                {paymentInfo?.icon} {paymentInfo?.label} — Payment Instructions
+              </p>
+              <p className="text-sm mb-3" style={{ color: "#666" }}>
+                {paymentInfo?.instructions}
+              </p>
+              <p className="text-xs" style={{ color: "#999" }}>
+                Please complete the transfer within 24 hours to confirm your
+                order. Your order will be shipped once payment is verified.
+              </p>
+            </div>
+          )}
+
           <p className="text-[#666] mb-8 leading-relaxed">
-            Thank you for your purchase. We&apos;ve sent a confirmation email
-            with your order details and tracking information.
+            {selectedPayment === "cod"
+              ? "Your order will arrive soon. Please have the exact amount ready for the delivery driver."
+              : "We'll verify your payment and send you a confirmation. Thank you for your purchase!"}
           </p>
           <Link href="/shop" className="btn-primary w-full">
             Continue Shopping
@@ -65,6 +253,7 @@ export default function CheckoutPage() {
     );
   }
 
+  // ─── Empty Cart ──────────────────────────────────────────
   if (items.length === 0) {
     return (
       <div className="min-h-[70vh] flex items-center justify-center bg-[var(--riva-ivory)] px-6">
@@ -91,6 +280,13 @@ export default function CheckoutPage() {
     );
   }
 
+  // ─── Input helper ──────────────────────────────────────────
+  const inputClass =
+    "w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm";
+  const labelClass =
+    "text-xs font-semibold tracking-widest uppercase block mb-2";
+
+  // ─── Main Checkout ──────────────────────────────────────
   return (
     <div className="min-h-screen bg-[var(--riva-ivory)] pb-24">
       {/* Header */}
@@ -115,7 +311,7 @@ export default function CheckoutPage() {
               onSubmit={handleSubmit}
               className="space-y-10"
             >
-              {/* Contact Info */}
+              {/* ── 1. Contact Information ─────────────────── */}
               <section>
                 <h2
                   className="text-lg font-semibold tracking-wide mb-6"
@@ -123,24 +319,49 @@ export default function CheckoutPage() {
                 >
                   1. Contact Information
                 </h2>
-                <div>
-                  <label
-                    className="text-xs font-semibold tracking-widest uppercase block mb-2"
-                    style={{ color: "var(--riva-charcoal)" }}
-                  >
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                    style={{ borderColor: "var(--riva-cream)" }}
-                    placeholder="your@email.com"
-                  />
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        className={labelClass}
+                        style={{ color: "var(--riva-charcoal)" }}
+                      >
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={form.email}
+                        onChange={(e) => updateField("email", e.target.value)}
+                        className={`${inputClass} ${errors.email ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.email ? undefined : "var(--riva-cream)" }}
+                        placeholder="your@email.com"
+                      />
+                      {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                    </div>
+                    <div>
+                      <label
+                        className={labelClass}
+                        style={{ color: "var(--riva-charcoal)" }}
+                      >
+                        Phone Number
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        value={form.phone}
+                        onChange={(e) => updateField("phone", e.target.value)}
+                        className={`${inputClass} ${errors.phone ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.phone ? undefined : "var(--riva-cream)" }}
+                        placeholder="01x xxxx xxxx"
+                      />
+                      {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                    </div>
+                  </div>
                 </div>
               </section>
 
-              {/* Shipping Info */}
+              {/* ── 2. Shipping Address ─────────────────── */}
               <section>
                 <h2
                   className="text-lg font-semibold tracking-wide mb-6"
@@ -152,7 +373,7 @@ export default function CheckoutPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                        className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
                         First Name
@@ -160,14 +381,19 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                        style={{ borderColor: "var(--riva-cream)" }}
+                        value={form.firstName}
+                        onChange={(e) =>
+                          updateField("firstName", e.target.value)
+                        }
+                        className={`${inputClass} ${errors.firstName ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.firstName ? undefined : "var(--riva-cream)" }}
                         placeholder="First name"
                       />
+                      {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
                     </div>
                     <div>
                       <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                        className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
                         Last Name
@@ -175,15 +401,20 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                        style={{ borderColor: "var(--riva-cream)" }}
+                        value={form.lastName}
+                        onChange={(e) =>
+                          updateField("lastName", e.target.value)
+                        }
+                        className={`${inputClass} ${errors.lastName ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.lastName ? undefined : "var(--riva-cream)" }}
                         placeholder="Last name"
                       />
+                      {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
                     </div>
                   </div>
                   <div>
                     <label
-                      className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                      className={labelClass}
                       style={{ color: "var(--riva-charcoal)" }}
                     >
                       Address
@@ -191,15 +422,18 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
-                      className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                      style={{ borderColor: "var(--riva-cream)" }}
-                      placeholder="Street address or P.O. Box"
+                      value={form.address}
+                      onChange={(e) => updateField("address", e.target.value)}
+                      className={`${inputClass} ${errors.address ? "border-red-400 focus:border-red-500" : ""}`}
+                      style={{ borderColor: errors.address ? undefined : "var(--riva-cream)" }}
+                      placeholder="Street address, building, apartment"
                     />
+                    {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                     <div className="col-span-2 sm:col-span-1">
                       <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                        className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
                         City
@@ -207,46 +441,53 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                        style={{ borderColor: "var(--riva-cream)" }}
+                        value={form.city}
+                        onChange={(e) => updateField("city", e.target.value)}
+                        className={`${inputClass} ${errors.city ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.city ? undefined : "var(--riva-cream)" }}
                         placeholder="City"
                       />
+                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
                     </div>
                     <div>
                       <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                        className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        State
+                        Governorate
                       </label>
                       <input
                         type="text"
                         required
-                        className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
-                        style={{ borderColor: "var(--riva-cream)" }}
-                        placeholder="State"
+                        value={form.state}
+                        onChange={(e) => updateField("state", e.target.value)}
+                        className={`${inputClass} ${errors.state ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.state ? undefined : "var(--riva-cream)" }}
+                        placeholder="Governorate"
                       />
+                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
                     </div>
                     <div>
                       <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                        className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        ZIP Code
+                        Postal Code
                       </label>
                       <input
                         type="text"
-                        required
-                        className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm"
+                        value={form.zip}
+                        onChange={(e) => updateField("zip", e.target.value)}
+                        className={inputClass}
                         style={{ borderColor: "var(--riva-cream)" }}
-                        placeholder="ZIP"
+                        placeholder="Optional"
                       />
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* Payment Details */}
+              {/* ── 3. Payment Method ─────────────────── */}
               <section>
                 <h2
                   className="text-lg font-semibold tracking-wide mb-6"
@@ -254,66 +495,140 @@ export default function CheckoutPage() {
                 >
                   3. Payment Method
                 </h2>
-                <div
-                  className="bg-white p-6 sm:p-8 rounded-3xl border shadow-sm"
-                  style={{ borderColor: "var(--riva-cream)" }}
-                >
-                  <div className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {paymentMethods.map((method) => (
+                    <button
+                      type="button"
+                      key={method.id}
+                      onClick={() => setSelectedPayment(method.id)}
+                      className="text-left p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300"
+                      style={{
+                        borderColor:
+                          selectedPayment === method.id
+                            ? "var(--riva-rose)"
+                            : "var(--riva-cream)",
+                        background:
+                          selectedPayment === method.id
+                            ? "var(--riva-blush)"
+                            : "white",
+                        transform:
+                          selectedPayment === method.id
+                            ? "scale(1.02)"
+                            : "scale(1)",
+                        boxShadow:
+                          selectedPayment === method.id
+                            ? "0 4px 20px rgba(244,163,181,0.25)"
+                            : "none",
+                      }}
+                    >
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="text-xl">{method.icon}</span>
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: "var(--riva-charcoal)" }}
+                        >
+                          {method.label}
+                        </span>
+                      </div>
+                      <p className="text-xs ml-8" style={{ color: "#999" }}>
+                        {method.description}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Payment instructions for wallet/bank methods */}
+                {selectedPayment !== "cod" && (
+                  <div
+                    className="mt-4 p-5 rounded-2xl bg-white border animate-fade-in space-y-4"
+                    style={{ borderColor: "var(--riva-cream)" }}
+                  >
                     <div>
-                      <label
-                        className="text-xs font-semibold tracking-widest uppercase block mb-2"
+                      <p
+                        className="text-sm font-semibold mb-2"
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        Card Number
-                      </label>
-                      <div className="relative">
-                        <input
-                          type="text"
-                          required
-                          className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-[var(--riva-ivory)]"
-                          style={{ borderColor: "var(--riva-cream)" }}
-                          placeholder="0000 0000 0000 0000"
-                        />
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-1.5 opacity-50">
-                          <div className="w-8 h-5 bg-gray-300 rounded-sm"></div>
-                          <div className="w-8 h-5 bg-gray-300 rounded-sm"></div>
-                        </div>
+                        📋 Transfer Details
+                      </p>
+                      <p
+                        className="text-sm leading-relaxed mb-2"
+                        style={{ color: "#666" }}
+                      >
+                        {
+                          paymentMethods.find((p) => p.id === selectedPayment)
+                            ?.instructions
+                        }
+                      </p>
+                      <div
+                        className="bg-[var(--riva-ivory)] p-3 rounded-xl border border-dashed text-center font-mono text-lg font-bold tracking-wider"
+                        style={{
+                          borderColor: "var(--riva-rose)",
+                          color: "var(--riva-charcoal)",
+                        }}
+                      >
+                        {
+                          paymentMethods.find((p) => p.id === selectedPayment)
+                            ?.storeAccount
+                        }
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-5">
-                      <div>
-                        <label
-                          className="text-xs font-semibold tracking-widest uppercase block mb-2"
-                          style={{ color: "var(--riva-charcoal)" }}
-                        >
-                          Expiry Date
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-[var(--riva-ivory)]"
-                          style={{ borderColor: "var(--riva-cream)" }}
-                          placeholder="MM/YY"
-                        />
-                      </div>
-                      <div>
-                        <label
-                          className="text-xs font-semibold tracking-widest uppercase block mb-2"
-                          style={{ color: "var(--riva-charcoal)" }}
-                        >
-                          CVC
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-[var(--riva-ivory)]"
-                          style={{ borderColor: "var(--riva-cream)" }}
-                          placeholder="123"
-                        />
-                      </div>
+
+                    <div
+                      className="pt-2 border-t"
+                      style={{ borderColor: "var(--riva-cream)" }}
+                    >
+                      <label
+                        className={labelClass}
+                        style={{ color: "var(--riva-charcoal)" }}
+                      >
+                        {
+                          paymentMethods.find((p) => p.id === selectedPayment)
+                            ?.senderFieldLabel
+                        }
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={form.senderDetails}
+                        onChange={(e) =>
+                          updateField("senderDetails", e.target.value)
+                        }
+                        className={`${inputClass} ${errors.senderDetails ? "border-red-400 focus:border-red-500" : ""}`}
+                        style={{ borderColor: errors.senderDetails ? undefined : "var(--riva-cream)" }}
+                        placeholder="e.g. 01xxxxxxxxx"
+                      />
+                      {errors.senderDetails && <p className="text-red-500 text-xs mt-1">{errors.senderDetails}</p>}
+                      <p className="text-[10px] mt-2" style={{ color: "#999" }}>
+                        * We need this to verify your transfer. Your order will
+                        be processed after verification.
+                      </p>
                     </div>
                   </div>
-                </div>
+                )}
+              </section>
+
+              {/* ── 4. Order Notes ─────────────────── */}
+              <section>
+                <h2
+                  className="text-lg font-semibold tracking-wide mb-6"
+                  style={{ color: "var(--riva-charcoal)" }}
+                >
+                  4. Order Notes{" "}
+                  <span
+                    className="text-xs font-normal"
+                    style={{ color: "#999" }}
+                  >
+                    (optional)
+                  </span>
+                </h2>
+                <textarea
+                  value={form.notes}
+                  onChange={(e) => updateField("notes", e.target.value)}
+                  rows={3}
+                  className="w-full px-4 py-3.5 rounded-xl text-sm border transition-colors focus:outline-none focus:border-[var(--riva-rose)] bg-white shadow-sm resize-none"
+                  style={{ borderColor: "var(--riva-cream)" }}
+                  placeholder="Any special requests or delivery instructions..."
+                />
               </section>
             </form>
           </div>
@@ -411,6 +726,18 @@ export default function CheckoutPage() {
                     </span>
                   )}
                 </div>
+                <div
+                  className="flex justify-between text-sm"
+                  style={{ color: "#666" }}
+                >
+                  <span>Payment</span>
+                  <span className="font-medium text-black text-xs">
+                    {
+                      paymentMethods.find((p) => p.id === selectedPayment)
+                        ?.label
+                    }
+                  </span>
+                </div>
               </div>
 
               <div
@@ -432,6 +759,12 @@ export default function CheckoutPage() {
                   ${total.toFixed(2)}
                 </span>
               </div>
+
+              {errorMsg && (
+                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200">
+                  <p className="text-sm text-red-600">{errorMsg}</p>
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -462,6 +795,14 @@ export default function CheckoutPage() {
                   </>
                 )}
               </button>
+
+              <p
+                className="text-[10px] text-center mt-4 leading-relaxed"
+                style={{ color: "#999" }}
+              >
+                By placing your order, you agree to our Terms of Service and
+                Privacy Policy.
+              </p>
             </div>
           </div>
         </div>

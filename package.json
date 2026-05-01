@@ -11,13 +11,21 @@
   "dependencies": {
     "@react-spring/three": "^10.0.3",
     "@react-three/fiber": "^9.6.0",
+    "@sanity/image-url": "^2.1.1",
+    "@sanity/vision": "^5.23.0",
     "@shadergradient/react": "^2.4.20",
+    "dotenv": "^17.4.2",
     "next": "16.2.4",
+    "next-sanity": "^12.4.0",
     "react": "19.2.4",
     "react-dom": "19.2.4",
-    "three": "^0.184.0"
+    "sanity": "^5.23.0",
+    "styled-components": "^6.4.1",
+    "three": "^0.184.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
+    "@sanity/client": "^7.22.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
@@ -25,6 +33,8 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }
