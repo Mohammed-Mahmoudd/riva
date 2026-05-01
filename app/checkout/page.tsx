@@ -334,7 +334,7 @@ export default function CheckoutPage() {
       </div>
 
       <div className="container-riva px-6 sm:px-8 py-12 sm:py-16 md:py-24">
-        <div className="flex flex-col-reverse lg:grid lg:grid-cols-12 gap-12 lg:gap-16">
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 lg:gap-16">
           {/* Left Column: Form */}
           <div className="lg:col-span-7 xl:col-span-8 space-y-12">
             <form
@@ -683,14 +683,14 @@ export default function CheckoutPage() {
                     value={couponCodeInput}
                     onChange={(e) => setCouponCodeInput(e.target.value)}
                     placeholder="Coupon Code"
-                    className="flex-1 px-4 py-2 rounded-xl text-sm border focus:outline-none focus:border-[var(--riva-rose)]"
+                    className="flex-1 min-w-0 px-4 py-2 rounded-xl text-sm border focus:outline-none focus:border-[var(--riva-rose)]"
                     style={{ borderColor: "var(--riva-cream)" }}
                   />
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
                     disabled={isValidatingCoupon}
-                    className="px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                    className="shrink-0 px-4 sm:px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
                     style={{ background: "var(--riva-charcoal)", color: "white" }}
                   >
                     {isValidatingCoupon ? "..." : "Apply"}

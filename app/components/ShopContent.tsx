@@ -14,13 +14,6 @@ const priceRanges = [
   { label: "EGP 80+", min: 80, max: Infinity },
 ];
 
-const sortOptions = [
-  { value: "featured", label: "Featured" },
-  { value: "price-low", label: "Price: Low to High" },
-  { value: "price-high", label: "Price: High to Low" },
-  { value: "rating", label: "Top Rated" },
-  { value: "newest", label: "Newest" },
-];
 
 function FilterContent({
   selectedCategory,
@@ -119,8 +112,6 @@ function ShopContentInner({ products, categories }: ShopContentProps) {
   const initialCategory = catQuery && categoryNames.includes(catQuery) ? catQuery : "All";
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedPrice, setSelectedPrice] = useState(0);
-  const [sortBy, setSortBy] = useState("featured");
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -132,39 +123,8 @@ function ShopContentInner({ products, categories }: ShopContentProps) {
       const price = p.salePrice || p.price;
       return price >= range.min && price < range.max;
     });
-    switch (sortBy) {
-      case "price-low":
-        result.sort(
-          (a, b) => (a.salePrice || a.price) - (b.salePrice || b.price),
-        );
-        break;
-      case "price-high":
-        result.sort(
-          (a, b) => (b.salePrice || b.price) - (a.salePrice || a.price),
-        );
-        break;
-      case "rating":
-        result.sort((a, b) => {
-          const avgA = a.reviews && a.reviews.length > 0 
-            ? a.reviews.reduce((acc, r) => acc + r.rating, 0) / a.reviews.length 
-            : 0;
-          const avgB = b.reviews && b.reviews.length > 0 
-            ? b.reviews.reduce((acc, r) => acc + r.rating, 0) / b.reviews.length 
-            : 0;
-          return avgB - avgA;
-        });
-        break;
-      case "newest":
-        // Sorting by badge as a fallback for 'new' items
-        result.sort((a, b) => {
-          if (a.badge === "new" && b.badge !== "new") return -1;
-          if (a.badge !== "new" && b.badge === "new") return 1;
-          return 0;
-        });
-        break;
-    }
     return result;
-  }, [products, selectedCategory, selectedPrice, sortBy]);
+  }, [products, selectedCategory, selectedPrice]);
 
   const filterProps = {
     selectedCategory,
@@ -197,31 +157,32 @@ function ShopContentInner({ products, categories }: ShopContentProps) {
         </h1>
       </div>
 
-      <div className="container-riva px-6 sm:px-8 py-16 sm:py-24">
+      <div className="container-riva px-6 sm:px-8 py-8 sm:py-24">
+        {/* Mobile Category Pills (Horizontal Scroll) */}
+        <div className="md:hidden overflow-x-auto scrollbar-hide -mx-6 px-6 mb-8">
+          <div className="flex gap-3 min-w-max pb-2">
+            {categoryNames.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className="px-5 py-2.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-all duration-300"
+                style={{
+                  background: selectedCategory === cat ? "var(--riva-charcoal)" : "white",
+                  color: selectedCategory === cat ? "white" : "var(--riva-charcoal)",
+                  border: `1px solid ${selectedCategory === cat ? "var(--riva-charcoal)" : "var(--riva-cream)"}`,
+                  boxShadow: selectedCategory === cat ? "0 4px 14px rgba(0,0,0,0.15)" : "none",
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
           <p className="text-sm" style={{ color: "#999" }}>
             {filtered.length} products
           </p>
-          <div className="flex items-center gap-3 justify-start sm:justify-end">
-            <button
-              className="md:hidden border border-[var(--riva-charcoal)] text-[var(--riva-charcoal)] text-[10px] sm:text-xs font-semibold py-1.5 px-4 rounded-full transition-colors hover:bg-[var(--riva-charcoal)] hover:text-white"
-              onClick={() => setIsMobileFilterOpen(true)}
-            >
-              Filters
-            </button>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="text-xs sm:text-sm px-4 py-2 rounded-full border bg-white focus:outline-none focus:border-[var(--riva-rose)] transition-colors"
-              style={{ borderColor: "var(--riva-cream)" }}
-            >
-              {sortOptions.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
 
         <div className="flex gap-10">
@@ -256,31 +217,7 @@ function ShopContentInner({ products, categories }: ShopContentProps) {
         </div>
       </div>
 
-      {isMobileFilterOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm md:hidden"
-            onClick={() => setIsMobileFilterOpen(false)}
-          />
-          <div className="fixed top-0 left-0 z-50 h-full w-[85vw] max-w-[320px] bg-white shadow-2xl p-6 sm:p-8 overflow-y-auto md:hidden">
-            <div className="flex justify-between items-center mb-8">
-              <h2
-                className="text-lg font-semibold"
-                style={{ fontFamily: "var(--font-heading)" }}
-              >
-                Filters
-              </h2>
-              <button
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="p-2 rounded-full hover:bg-[var(--riva-blush)]"
-              >
-                ✕
-              </button>
-            </div>
-            <FilterContent {...filterProps} />
-          </div>
-        </>
-      )}
+
     </div>
   );
 }
