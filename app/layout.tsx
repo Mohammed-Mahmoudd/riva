@@ -39,11 +39,6 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   manifest: "/manifest.json",
-  icons: {
-    icon: "/favicon.png",
-    shortcut: "/favicon.png",
-    apple: "/favicon.png",
-  },
   openGraph: {
     title: "RIVA — Premium Accessories for Women & Girls",
     description: "Discover curated luxury accessories. Elevate your look with RIVA's exclusive earrings, necklaces, and more.",
