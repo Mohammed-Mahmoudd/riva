@@ -6,6 +6,8 @@ import Footer from "./components/Footer";
 import { CartProvider } from "./context/CartContext";
 import { WishlistProvider } from "./context/WishlistContext";
 
+import Script from "next/script";
+
 const playfair = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
@@ -81,6 +83,20 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable} antialiased`}>
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4B6EM7Y714"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-4B6EM7Y714');
+          `}
+        </Script>
+      </head>
       <body className="min-h-screen flex flex-col" style={{ fontFamily: "var(--font-body)" }}>
         <script
           type="application/ld+json"
