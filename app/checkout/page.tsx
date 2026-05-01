@@ -65,9 +65,6 @@ export default function CheckoutPage() {
     email: "",
     phone: "",
     address: "",
-    city: "",
-    state: "",
-    zip: "",
     notes: "",
     senderDetails: "", // Added this to capture their wallet/instapay sender info
   });
@@ -98,10 +95,6 @@ export default function CheckoutPage() {
       error = "Last name is required";
     } else if (field === "address" && !value.trim()) {
       error = "Address is required";
-    } else if (field === "city" && !value.trim()) {
-      error = "City is required";
-    } else if (field === "state" && !value.trim()) {
-      error = "Governorate is required";
     }
     
     setErrors((prev) => ({ ...prev, [field]: error }));
@@ -110,13 +103,11 @@ export default function CheckoutPage() {
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Please enter a valid email address";
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = "Please enter a valid email address";
     if (!form.phone || !/^01[0-2,5]\d{8}$/.test(form.phone.replace(/\s/g, ''))) newErrors.phone = "Please enter a valid Egyptian phone number";
     if (!form.firstName.trim()) newErrors.firstName = "First name is required";
     if (!form.lastName.trim()) newErrors.lastName = "Last name is required";
     if (!form.address.trim()) newErrors.address = "Address is required";
-    if (!form.city.trim()) newErrors.city = "City is required";
-    if (!form.state.trim()) newErrors.state = "Governorate is required";
     if (selectedPayment !== "cod" && !form.senderDetails.trim()) newErrors.senderDetails = "Sender details are required for this payment method";
 
     setErrors(newErrors);
@@ -370,12 +361,11 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="email"
-                        required
                         value={form.email}
                         onChange={(e) => updateField("email", e.target.value)}
                         className={`${inputClass} ${errors.email ? "border-red-400 focus:border-red-500" : ""}`}
                         style={{ borderColor: errors.email ? undefined : "var(--riva-cream)" }}
-                        placeholder="your@email.com"
+                        placeholder="your@email.com (Optional)"
                       />
                       {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
                     </div>
@@ -469,60 +459,6 @@ export default function CheckoutPage() {
                       placeholder="Street address, building, apartment"
                     />
                     {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label
-                        className={labelClass}
-                        style={{ color: "var(--riva-charcoal)" }}
-                      >
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={form.city}
-                        onChange={(e) => updateField("city", e.target.value)}
-                        className={`${inputClass} ${errors.city ? "border-red-400 focus:border-red-500" : ""}`}
-                        style={{ borderColor: errors.city ? undefined : "var(--riva-cream)" }}
-                        placeholder="City"
-                      />
-                      {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
-                    </div>
-                    <div>
-                      <label
-                        className={labelClass}
-                        style={{ color: "var(--riva-charcoal)" }}
-                      >
-                        Governorate
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={form.state}
-                        onChange={(e) => updateField("state", e.target.value)}
-                        className={`${inputClass} ${errors.state ? "border-red-400 focus:border-red-500" : ""}`}
-                        style={{ borderColor: errors.state ? undefined : "var(--riva-cream)" }}
-                        placeholder="Governorate"
-                      />
-                      {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}
-                    </div>
-                    <div>
-                      <label
-                        className={labelClass}
-                        style={{ color: "var(--riva-charcoal)" }}
-                      >
-                        Postal Code
-                      </label>
-                      <input
-                        type="text"
-                        value={form.zip}
-                        onChange={(e) => updateField("zip", e.target.value)}
-                        className={inputClass}
-                        style={{ borderColor: "var(--riva-cream)" }}
-                        placeholder="Optional"
-                      />
-                    </div>
                   </div>
                 </div>
               </section>

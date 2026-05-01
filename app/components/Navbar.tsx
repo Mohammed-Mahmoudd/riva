@@ -49,7 +49,6 @@ export default function Navbar() {
               <span>✨ Free Shipping on Orders Over EGP 50</span>
               <span>🎀 New Spring Collection Available Now</span>
               <span>💎 Use Code RIVA15 for 15% Off</span>
-              <span>🌸 Free Gift Wrapping on All Orders</span>
             </span>
           ))}
         </div>

@@ -11,13 +11,10 @@ interface OrderData {
   // Contact
   firstName: string
   lastName: string
-  email: string
+  email?: string
   phone: string
   // Shipping
   address: string
-  city: string
-  state: string
-  zip: string
   // Payment
   paymentMethod: 'cod' | 'vodafone_cash' | 'etisalat_cash'
   senderDetails?: string
@@ -88,12 +85,10 @@ function formatOrderMessage(order: OrderData): string {
 
 👤 <b>Customer Info</b>
    Name: ${order.firstName} ${order.lastName}
-   Email: ${order.email}
-   Phone: ${order.phone}
+${order.email ? `   Email: ${order.email}\n` : ''}   Phone: ${order.phone}
 
 📦 <b>Shipping Address</b>
    ${order.address}
-   ${order.city}, ${order.state} ${order.zip}
 
 💳 <b>Payment Method</b>
    ${PAYMENT_LABELS[order.paymentMethod] || order.paymentMethod}
@@ -122,10 +117,8 @@ export async function POST(req: NextRequest) {
     if (
       !order.firstName ||
       !order.lastName ||
-      !order.email ||
       !order.phone ||
       !order.address ||
-      !order.city ||
       !order.paymentMethod ||
       !order.items?.length
     ) {
