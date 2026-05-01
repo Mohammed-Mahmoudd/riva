@@ -46,7 +46,7 @@ export default function Navbar() {
         <div className="marquee-content">
           {[...Array(3)].map((_, i) => (
             <span key={i} className="flex gap-20">
-              <span>✨ Free Shipping on Orders Over $50</span>
+              <span>✨ Free Shipping on Orders Over EGP 50</span>
               <span>🎀 New Spring Collection Available Now</span>
               <span>💎 Use Code RIVA20 for 20% Off</span>
               <span>🌸 Free Gift Wrapping on All Orders</span>
@@ -95,10 +95,13 @@ export default function Navbar() {
 
           {/* Icons */}
           <div className="flex items-center gap-2 sm:gap-5">
-            {/* Search */}
-            <button
-              className="p-2 rounded-full transition-all duration-300 hover:bg-[var(--riva-blush)]"
-              aria-label="Search"
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/itsriva.m/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 rounded-full transition-all duration-300 hover:bg-[var(--riva-blush)] text-[var(--riva-charcoal)] hover:text-[var(--riva-rose)]"
+              aria-label="Instagram"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -111,10 +114,11 @@ export default function Navbar() {
                 strokeLinecap="round"
                 strokeLinejoin="round"
               >
-                <circle cx="11" cy="11" r="8" />
-                <path d="m21 21-4.3-4.3" />
+                <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
               </svg>
-            </button>
+            </a>
 
             {/* Wishlist */}
             <Link
@@ -276,14 +280,19 @@ export default function Navbar() {
               Follow us
             </p>
             <div className="flex gap-4 mt-3">
-              {["Instagram", "TikTok", "Pinterest"].map((social) => (
+              {[
+                { name: "Instagram", href: "https://www.instagram.com/itsriva.m/" },
+                { name: "WhatsApp", href: "https://wa.me/201501685539" }
+              ].map((social) => (
                 <a
-                  key={social}
-                  href="#"
+                  key={social.name}
+                  href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-sm font-medium transition-colors hover:text-[var(--riva-rose)]"
                   style={{ color: "var(--riva-charcoal)" }}
                 >
-                  {social}
+                  {social.name}
                 </a>
               ))}
             </div>

@@ -1,31 +1,26 @@
 import Link from "next/link";
+import { fetchAllCategories } from "@/sanity/lib/sanity-fetch";
 
-export default function Footer() {
+export default async function Footer() {
   const yr = new Date().getFullYear();
+  const categories = await fetchAllCategories();
   const links1 = [
     { href: "/shop", label: "Shop All" },
-    { href: "/shop?category=new", label: "New Arrivals" },
-    { href: "/shop?category=sale", label: "Sale" },
-    { href: "/shop?category=bestseller", label: "Bestsellers" },
+    ...categories.slice(3, 6).map((cat) => ({
+      href: `/shop?category=${encodeURIComponent(cat.name)}`,
+      label: cat.name,
+    })),
   ];
-  const links2 = [
-    { href: "/shop?cat=earrings", label: "Earrings" },
-    { href: "/shop?cat=necklaces", label: "Necklaces" },
-    { href: "/shop?cat=bracelets", label: "Bracelets" },
-    { href: "/shop?cat=bags", label: "Bags" },
-    { href: "/shop?cat=sunglasses", label: "Sunglasses" },
-    { href: "/shop?cat=hair", label: "Hair Accessories" },
-  ];
-  const links3 = [
-    { href: "/contact", label: "Contact Us" },
-    { href: "#", label: "Shipping & Returns" },
-    { href: "#", label: "Size Guide" },
-    { href: "#", label: "FAQs" },
-  ];
+  const links2 = categories.slice(0, 3).map((cat) => ({
+    href: `/shop?category=${encodeURIComponent(cat.name)}`,
+    label: cat.name,
+  }));
+  const links3 = [{ href: "/contact", label: "Contact Us" }];
 
   const socialIcons = [
     {
       name: "Instagram",
+      href: "https://www.instagram.com/itsriva.m/",
       icon: (
         <svg
           width="18"
@@ -44,7 +39,8 @@ export default function Footer() {
       ),
     },
     {
-      name: "Twitter",
+      name: "WhatsApp",
+      href: "https://wa.me/201501685539",
       icon: (
         <svg
           width="18"
@@ -56,24 +52,7 @@ export default function Footer() {
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z" />
-        </svg>
-      ),
-    },
-    {
-      name: "Facebook",
-      icon: (
-        <svg
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
         </svg>
       ),
     },
@@ -89,7 +68,7 @@ export default function Footer() {
       style={{ background: "var(--riva-charcoal)", color: "white" }}
     >
       <div className="container-riva">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 lg:gap-12">
+        <div className="grid grid-cols-1 mb-3 md:grid-cols-12 gap-10 lg:gap-12">
           <div className="md:col-span-4 lg:col-span-4 lg:pr-8">
             <Link href="/" className="inline-block mb-5">
               <span
@@ -111,7 +90,9 @@ export default function Footer() {
               {socialIcons.map((s) => (
                 <a
                   key={s.name}
-                  href="#"
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110 hover:bg-[var(--riva-rose)] bg-white/10 border border-white/10"
                   aria-label={s.name}
                 >
@@ -192,7 +173,12 @@ export default function Footer() {
                   <rect width="20" height="16" x="2" y="4" rx="2" />
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
-                hello@riva.com
+                <a
+                  href="mailto:its.riva.m@gmail.com"
+                  className="hover:text-white transition-colors"
+                >
+                  its.riva.m@gmail.com
+                </a>
               </div>
               <div
                 className="flex items-center text-sm"
@@ -211,7 +197,12 @@ export default function Footer() {
                 >
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                +1 (555) 123-4567
+                <a
+                  href="tel:+201501685539"
+                  className="hover:text-white transition-colors"
+                >
+                  01501685539
+                </a>
               </div>
             </div>
           </div>
@@ -243,18 +234,6 @@ export default function Footer() {
               <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
             </svg>
           </p>
-          <div className="flex items-center gap-5">
-            {["Privacy Policy", "Terms of Service"].map((t) => (
-              <a
-                key={t}
-                href="#"
-                className="text-xs transition-colors hover:text-[var(--riva-rose)]"
-                style={{ color: "rgba(255,255,255,0.35)" }}
-              >
-                {t}
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </footer>

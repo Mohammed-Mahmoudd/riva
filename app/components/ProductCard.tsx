@@ -23,8 +23,8 @@ export default function ProductCard({ product }: { product: Product }) {
 
         {product.badge && (
           <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-10">
-            <span className={`${badgeClass} text-[9px] sm:text-[11px] px-2 sm:px-3 py-0.5 sm:py-1`}>{product.badge}</span>
-          </div>
+            <span className={`${badgeClass} text-[9px] sm:text-[11px]`}>{product.badge}</span>
+            </div>
         )}
 
         <button onClick={() => toggleWishlist(product)} className="absolute top-2 sm:top-3 right-2 sm:right-3 z-10 w-7 h-7 sm:w-9 sm:h-9 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110" style={{ background: inWishlist ? "var(--riva-rose)" : "rgba(255,255,255,0.85)", backdropFilter: "blur(8px)" }} aria-label="Toggle wishlist">
@@ -49,23 +49,30 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="flex items-center gap-1.5 sm:gap-2">
           {product.salePrice ? (
             <>
-              <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--riva-rose-dark)" }}>${product.salePrice}</span>
-              <span className="text-[10px] sm:text-xs line-through" style={{ color: "#aaa" }}>${product.price}</span>
+              <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--riva-rose-dark)" }}>EGP {product.salePrice}</span>
+              <span className="text-[10px] sm:text-xs line-through" style={{ color: "#aaa" }}>EGP {product.price}</span>
             </>
           ) : (
-            <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--riva-charcoal)" }}>${product.price}</span>
+            <span className="text-xs sm:text-sm font-bold" style={{ color: "var(--riva-charcoal)" }}>EGP {product.price}</span>
           )}
         </div>
-        <div className="flex items-center gap-1 mt-1.5 sm:mt-2">
-          <div className="flex">
-            {[...Array(5)].map((_, i) => (
-              <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i < Math.floor(product.rating) ? "var(--riva-gold)" : "#ddd"}>
-                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-              </svg>
-            ))}
+
+        {product.reviews && product.reviews.length > 0 && (
+          <div className="flex items-center gap-1 mt-1.5 sm:mt-2">
+            <div className="flex">
+              {[...Array(5)].map((_, i) => {
+                const reviews = product.reviews || [];
+                const avg = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
+                return (
+                  <svg key={i} width="10" height="10" viewBox="0 0 24 24" fill={i < Math.floor(avg) ? "var(--riva-gold)" : "#ddd"}>
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                  </svg>
+                );
+              })}
+            </div>
+            <span className="text-[9px] sm:text-xs" style={{ color: "#999" }}>({product.reviews.length})</span>
           </div>
-          <span className="text-[9px] sm:text-xs" style={{ color: "#999" }}>({product.reviewCount})</span>
-        </div>
+        )}
       </div>
     </div>
   );

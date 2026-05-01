@@ -1,16 +1,17 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import ProductCard from "./ProductCard";
 import type { Product } from "../data/products";
 import type { Category } from "../data/categories";
 
 const priceRanges = [
   { label: "All Prices", min: 0, max: Infinity },
-  { label: "Under $25", min: 0, max: 25 },
-  { label: "$25 - $50", min: 25, max: 50 },
-  { label: "$50 - $80", min: 50, max: 80 },
-  { label: "$80+", min: 80, max: Infinity },
+  { label: "Under EGP 25", min: 0, max: 25 },
+  { label: "EGP 25 - EGP 50", min: 25, max: 50 },
+  { label: "EGP 50 - EGP 80", min: 50, max: 80 },
+  { label: "EGP 80+", min: 80, max: Infinity },
 ];
 
 const sortOptions = [
@@ -48,7 +49,7 @@ function FilterContent({
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className="block w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-300"
+              className="block w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-300 cursor-pointer"
               style={{
                 background:
                   selectedCategory === cat
@@ -77,7 +78,7 @@ function FilterContent({
             <button
               key={range.label}
               onClick={() => setSelectedPrice(i)}
-              className="block w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-300"
+              className="block w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-300 cursor-pointer"
               style={{
                 background:
                   selectedPrice === i ? "var(--riva-blush)" : "transparent",
@@ -110,9 +111,13 @@ interface ShopContentProps {
   categories: Category[];
 }
 
-export default function ShopContent({ products, categories }: ShopContentProps) {
+function ShopContentInner({ products, categories }: ShopContentProps) {
+  const searchParams = useSearchParams();
+  const catQuery = searchParams.get("category");
   const categoryNames = ["All", ...categories.map((c) => c.name)];
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  
+  const initialCategory = catQuery && categoryNames.includes(catQuery) ? catQuery : "All";
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [selectedPrice, setSelectedPrice] = useState(0);
   const [sortBy, setSortBy] = useState("featured");
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -264,5 +269,13 @@ export default function ShopContent({ products, categories }: ShopContentProps) 
         </>
       )}
     </div>
+  );
+}
+
+export default function ShopContent(props: ShopContentProps) {
+  return (
+    <Suspense fallback={<div className="min-h-screen" style={{ background: "var(--riva-ivory)" }} />}>
+      <ShopContentInner {...props} />
+    </Suspense>
   );
 }

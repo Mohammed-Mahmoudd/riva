@@ -12,7 +12,14 @@ const productProjection = `{
   isNew,
   isBestseller,
   "images": images[].asset->url,
-  "category": categories[0]->name
+  "category": categories[0]->name,
+  "reviews": *[_type == "review" && product._ref == ^._id && isApproved == true] | order(_createdAt desc) {
+    _id,
+    name,
+    rating,
+    comment,
+    _createdAt
+  }
 }`
 
 // Fetch all products (newest first)
@@ -54,4 +61,14 @@ export const allCategoriesQuery = groq`
 // Fetch products by category name
 export const productsByCategoryQuery = groq`
   *[_type == "product" && $categoryName in categories[]->name] | order(_createdAt desc) ${productProjection}
+`
+
+// Fetch all active coupons
+export const allCouponsQuery = groq`
+  *[_type == "coupon" && isActive == true] {
+    _id,
+    code,
+    discountType,
+    discountValue
+  }
 `

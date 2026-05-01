@@ -5,10 +5,14 @@ export interface Product {
   salePrice?: number;
   images: string[];
   category: string;
-  colors: string[];
   description: string;
-  rating: number;
-  reviewCount: number;
   badge?: "new" | "sale" | "bestseller";
   inStock: boolean;
+  reviews?: {
+    _id: string;
+    name: string;
+    rating: number;
+    comment: string;
+    _createdAt: string;
+  }[];
 }

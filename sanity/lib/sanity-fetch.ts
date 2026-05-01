@@ -5,6 +5,7 @@ import {
   featuredProductsQuery,
   newArrivalsQuery,
   allCategoriesQuery,
+  allCouponsQuery,
 } from './queries'
 import type { Product } from '@/app/data/products'
 import type { Category } from '@/app/data/categories'
@@ -22,6 +23,13 @@ interface SanityProduct {
   isBestseller?: boolean
   images: (string | null)[]
   category: string | null
+  reviews?: {
+    _id: string
+    name: string
+    rating: number
+    comment: string
+    _createdAt: string
+  }[]
 }
 
 interface SanityCategory {
@@ -32,51 +40,40 @@ interface SanityCategory {
   image: string | null
 }
 
-// ── Deterministic "random" helpers (stable across renders) ──────────
-function hashCode(str: string): number {
-  let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i)
-    hash |= 0
-  }
-  return Math.abs(hash)
+export interface Coupon {
+  _id: string
+  code: string
+  discountType: 'percentage' | 'fixed'
+  discountValue: number
 }
 
-function deterministicRating(id: string): number {
-  return +(4.0 + (hashCode(id) % 10) / 10).toFixed(1)
-}
-
-function deterministicReviewCount(id: string): number {
-  return 30 + (hashCode(id + '_rc') % 200)
-}
-
-// ── Default color palette when product has no colors ────────────────
-const DEFAULT_COLORS = ['#D4AF37', '#C0C0C0', '#F4A3B5']
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80'
 
 // ── Transform a Sanity product into the frontend Product shape ──────
 function transformProduct(p: SanityProduct): Product {
-  let badge: Product['badge'] = undefined
-  if (p.isBestseller) badge = 'bestseller'
-  else if (p.isNew) badge = 'new'
-  else if (p.discountPrice && p.discountPrice < p.price) badge = 'sale'
+  // Global price adjustment: Add 85 EGP to all products
+  const adjustedPrice = p.price + 85;
+  const adjustedSalePrice = p.discountPrice ? p.discountPrice + 85 : undefined;
 
-  const cleanImages = (p.images ?? []).filter(Boolean) as string[]
+  let badge: Product['badge'] = undefined;
+  if (p.isBestseller) badge = 'bestseller';
+  else if (p.isNew) badge = 'new';
+  else if (adjustedSalePrice && adjustedSalePrice < adjustedPrice) badge = 'sale';
+
+  const cleanImages = (p.images ?? []).filter(Boolean) as string[];
 
   return {
     id: p._id,
     name: p.name,
-    price: p.price,
-    salePrice: p.discountPrice && p.discountPrice < p.price ? p.discountPrice : undefined,
+    price: adjustedPrice,
+    salePrice: adjustedSalePrice && adjustedSalePrice < adjustedPrice ? adjustedSalePrice : undefined,
     images: cleanImages.length > 0 ? cleanImages : [FALLBACK_IMAGE],
     category: p.category || 'Uncategorized',
-    colors: DEFAULT_COLORS,
     description: p.description || '',
-    rating: deterministicRating(p._id),
-    reviewCount: deterministicReviewCount(p._id),
     badge,
     inStock: (p.stock ?? 0) > 0,
-  }
+    reviews: p.reviews || [],
+  };
 }
 
 // ── Transform a Sanity category into the frontend Category shape ────
@@ -125,4 +122,8 @@ export async function fetchNewArrivals(): Promise<Product[]> {
 export async function fetchAllCategories(): Promise<Category[]> {
   const raw: SanityCategory[] = await client.fetch(allCategoriesQuery)
   return (raw ?? []).map(transformCategory)
+}
+
+export async function fetchAllCoupons(): Promise<Coupon[]> {
+  return await client.fetch(allCouponsQuery)
 }

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
+import { fetchAllCoupons, type Coupon } from "@/sanity/lib/sanity-fetch";
 
 type PaymentMethod = "cod" | "vodafone_cash" | "etisalat_cash";
 
@@ -51,6 +52,10 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("cod");
+  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [couponCodeInput, setCouponCodeInput] = useState("");
+  const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState("");
 
   // Form state
   const [form, setForm] = useState({
@@ -77,6 +82,9 @@ export default function CheckoutPage() {
         console.error("Failed to parse saved address");
       }
     }
+    
+    // Fetch coupons
+    fetchAllCoupons().then(setAvailableCoupons).catch(console.error);
   }, []);
 
   const validateField = (field: string, value: string) => {
@@ -122,8 +130,32 @@ export default function CheckoutPage() {
   };
 
   const subtotal = getCartTotal();
+  
+  let discount = 0;
+  if (appliedCoupon) {
+    if (appliedCoupon.discountType === "percentage") {
+      discount = subtotal * (appliedCoupon.discountValue / 100);
+    } else {
+      discount = Math.min(appliedCoupon.discountValue, subtotal);
+    }
+  }
+
   const shipping = subtotal > 50 ? 0 : 10;
-  const total = subtotal + shipping;
+  const total = subtotal - discount + shipping;
+
+  const handleApplyCoupon = () => {
+    setCouponError("");
+    const code = couponCodeInput.trim().toUpperCase();
+    if (!code) return;
+
+    const found = availableCoupons.find((c) => c.code.toUpperCase() === code);
+    if (found) {
+      setAppliedCoupon(found);
+      setCouponCodeInput("");
+    } else {
+      setCouponError("Invalid or expired coupon code");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,9 +175,10 @@ export default function CheckoutPage() {
           name: item.product.name,
           quantity: item.quantity,
           price: item.product.salePrice || item.product.price,
-          color: item.selectedColor,
         })),
         subtotal,
+        discount,
+        couponCode: appliedCoupon?.code || null,
         shipping,
         total,
       };
@@ -344,7 +377,7 @@ export default function CheckoutPage() {
                         className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        Phone Number
+                        Phone Number (WhatsApp)
                       </label>
                       <input
                         type="tel"
@@ -652,7 +685,7 @@ export default function CheckoutPage() {
               <div className="space-y-5 max-h-[40vh] lg:max-h-[50vh] overflow-y-auto pr-2">
                 {items.map((item) => (
                   <div
-                    key={`${item.product.id}-${item.selectedColor}`}
+                    key={item.product.id}
                     className="flex gap-4"
                   >
                     <div className="w-20 h-24 relative rounded-xl overflow-hidden bg-[var(--riva-cream)] flex-shrink-0">
@@ -670,9 +703,7 @@ export default function CheckoutPage() {
                       >
                         {item.product.name}
                       </h3>
-                      <p className="text-xs mb-2" style={{ color: "#999" }}>
-                        Color: {item.selectedColor}
-                      </p>
+
                       <div className="flex items-center justify-between">
                         <span
                           className="text-xs font-medium"
@@ -684,7 +715,7 @@ export default function CheckoutPage() {
                           className="text-sm font-bold"
                           style={{ color: "var(--riva-rose-dark)" }}
                         >
-                          $
+                          EGP
                           {(
                             (item.product.salePrice || item.product.price) *
                             item.quantity
@@ -701,6 +732,48 @@ export default function CheckoutPage() {
                 style={{ background: "var(--riva-cream)" }}
               />
 
+              {/* Coupon Section */}
+              <div className="mb-6">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={couponCodeInput}
+                    onChange={(e) => setCouponCodeInput(e.target.value)}
+                    placeholder="Coupon Code"
+                    className="flex-1 px-4 py-2 rounded-xl text-sm border focus:outline-none focus:border-[var(--riva-rose)]"
+                    style={{ borderColor: "var(--riva-cream)" }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleApplyCoupon}
+                    className="px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                    style={{ background: "var(--riva-charcoal)", color: "white" }}
+                  >
+                    Apply
+                  </button>
+                </div>
+                {couponError && <p className="text-red-500 text-[10px] mt-1 ml-1">{couponError}</p>}
+                {appliedCoupon && (
+                  <div className="flex items-center justify-between mt-2 px-3 py-1.5 rounded-lg bg-[var(--riva-blush)] text-[var(--riva-rose-dark)]">
+                    <span className="text-[10px] font-bold tracking-widest uppercase">
+                      🎫 {appliedCoupon.code} APPLIED
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setAppliedCoupon(null)}
+                      className="text-xs hover:scale-110"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              <div
+                className="h-px w-full my-6"
+                style={{ background: "var(--riva-cream)" }}
+              />
+
               <div className="space-y-3 mb-6">
                 <div
                   className="flex justify-between text-sm"
@@ -708,7 +781,7 @@ export default function CheckoutPage() {
                 >
                   <span>Subtotal</span>
                   <span className="font-medium text-black">
-                    ${subtotal.toFixed(2)}
+                    EGP {subtotal.toFixed(2)}
                   </span>
                 </div>
                 <div
@@ -722,10 +795,19 @@ export default function CheckoutPage() {
                     </span>
                   ) : (
                     <span className="font-medium text-black">
-                      ${shipping.toFixed(2)}
+                      EGP {shipping.toFixed(2)}
                     </span>
                   )}
                 </div>
+                {discount > 0 && (
+                  <div
+                    className="flex justify-between text-sm"
+                    style={{ color: "var(--riva-rose-dark)" }}
+                  >
+                    <span>Discount</span>
+                    <span className="font-bold">- EGP {discount.toFixed(2)}</span>
+                  </div>
+                )}
                 <div
                   className="flex justify-between text-sm"
                   style={{ color: "#666" }}
@@ -753,10 +835,9 @@ export default function CheckoutPage() {
                   Total
                 </span>
                 <span
-                  className="text-2xl font-bold"
-                  style={{ color: "var(--riva-charcoal)" }}
+                  className="text-2xl font-bold text-gradient"
                 >
-                  ${total.toFixed(2)}
+                  EGP {total.toFixed(2)}
                 </span>
               </div>
 
