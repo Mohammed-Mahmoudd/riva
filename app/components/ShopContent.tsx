@@ -144,10 +144,23 @@ function ShopContentInner({ products, categories }: ShopContentProps) {
         );
         break;
       case "rating":
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => {
+          const avgA = a.reviews && a.reviews.length > 0 
+            ? a.reviews.reduce((acc, r) => acc + r.rating, 0) / a.reviews.length 
+            : 0;
+          const avgB = b.reviews && b.reviews.length > 0 
+            ? b.reviews.reduce((acc, r) => acc + r.rating, 0) / b.reviews.length 
+            : 0;
+          return avgB - avgA;
+        });
         break;
       case "newest":
-        result.sort((a) => (a.badge === "new" ? -1 : 1));
+        // Sorting by badge as a fallback for 'new' items
+        result.sort((a, b) => {
+          if (a.badge === "new" && b.badge !== "new") return -1;
+          if (a.badge !== "new" && b.badge === "new") return 1;
+          return 0;
+        });
         break;
     }
     return result;
