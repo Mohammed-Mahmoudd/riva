@@ -5,7 +5,7 @@ import Link from "next/link";
 import HeroSection from "./HeroSection";
 import CategoryCard from "./CategoryCard";
 import ProductCard from "./ProductCard";
-import TestimonialCarousel from "./TestimonialCarousel";
+
 import type { Product } from "../data/products";
 import type { Category } from "../data/categories";
 
@@ -87,27 +87,6 @@ export default function HomeContent({ featured, newArrivals, categories }: HomeC
         </div>
       </section>
 
-      <TestimonialCarousel />
-
-      {/* Trust Badges */}
-      <section className="py-10 sm:py-12 md:py-16 border-t" style={{ borderColor: "var(--riva-cream)" }}>
-        <div className="container-riva">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
-            {[
-              { icon: "🚚", title: "Free Shipping", desc: "On orders over $50" },
-              { icon: "🔄", title: "Easy Returns", desc: "30-day return policy" },
-              { icon: "🔒", title: "Secure Payment", desc: "SSL encrypted checkout" },
-              { icon: "💎", title: "Premium Quality", desc: "Handpicked materials" },
-            ].map((b) => (
-              <div key={b.title} className="text-center group">
-                <div className="text-2xl sm:text-3xl mb-2 sm:mb-3 transition-transform duration-300 group-hover:scale-110">{b.icon}</div>
-                <h4 className="text-xs sm:text-sm font-semibold mb-0.5 sm:mb-1" style={{ color: "var(--riva-charcoal)" }}>{b.title}</h4>
-                <p className="text-[10px] sm:text-xs" style={{ color: "#999" }}>{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
     </>
   );
 }
