@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "../context/CartContext";
-import { fetchAllCoupons, type Coupon } from "@/sanity/lib/sanity-fetch";
+import { type Coupon } from "@/sanity/lib/sanity-fetch";
+import { validateCouponAction } from "../actions/validateCoupon";
 
 type PaymentMethod = "cod" | "vodafone_cash" | "etisalat_cash";
 
@@ -52,7 +53,7 @@ export default function CheckoutPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod>("cod");
-  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<Coupon | null>(null);
   const [couponError, setCouponError] = useState("");
@@ -83,8 +84,6 @@ export default function CheckoutPage() {
       }
     }
     
-    // Fetch coupons
-    fetchAllCoupons().then(setAvailableCoupons).catch(console.error);
   }, []);
 
   const validateField = (field: string, value: string) => {
@@ -143,17 +142,25 @@ export default function CheckoutPage() {
   const shipping = subtotal > 50 ? 0 : 10;
   const total = subtotal - discount + shipping;
 
-  const handleApplyCoupon = () => {
+  const handleApplyCoupon = async () => {
     setCouponError("");
-    const code = couponCodeInput.trim().toUpperCase();
+    const code = couponCodeInput.trim();
     if (!code) return;
 
-    const found = availableCoupons.find((c) => c.code && c.code.toUpperCase() === code);
-    if (found) {
-      setAppliedCoupon(found);
-      setCouponCodeInput("");
-    } else {
-      setCouponError("Invalid or expired coupon code");
+    setIsValidatingCoupon(true);
+    try {
+      const found = await validateCouponAction(code);
+      if (found) {
+        setAppliedCoupon(found);
+        setCouponCodeInput("");
+      } else {
+        setCouponError("Invalid or expired coupon code");
+      }
+    } catch (e) {
+      console.error(e);
+      setCouponError("Error validating coupon.");
+    } finally {
+      setIsValidatingCoupon(false);
     }
   };
 
@@ -746,10 +753,11 @@ export default function CheckoutPage() {
                   <button
                     type="button"
                     onClick={handleApplyCoupon}
-                    className="px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95"
+                    disabled={isValidatingCoupon}
+                    className="px-6 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
                     style={{ background: "var(--riva-charcoal)", color: "white" }}
                   >
-                    Apply
+                    {isValidatingCoupon ? "..." : "Apply"}
                   </button>
                 </div>
                 {couponError && <p className="text-red-500 text-[10px] mt-1 ml-1">{couponError}</p>}
