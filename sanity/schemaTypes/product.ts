@@ -25,10 +25,14 @@ export const productType = defineType({
       name: 'images',
       title: 'Images',
       type: 'array',
-      of: [{ type: 'image' }],
-      options: {
-        hotspot: true,
-      },
+      of: [
+        {
+          type: 'image',
+          options: {
+            hotspot: true,
+          },
+        },
+      ],
       validation: (Rule) => Rule.required().min(1),
     }),
     defineField({
