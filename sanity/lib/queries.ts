@@ -69,6 +69,8 @@ export const allCouponsQuery = groq`
     _id,
     code,
     discountType,
-    discountValue
+    discountValue,
+    usageLimit,
+    usedCount
   }
 `

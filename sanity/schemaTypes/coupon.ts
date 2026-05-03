@@ -36,5 +36,20 @@ export const couponType = defineType({
       type: 'boolean',
       initialValue: true,
     }),
+    defineField({
+      name: 'usageLimit',
+      title: 'Usage Limit',
+      type: 'number',
+      description: 'Maximum number of times this coupon can be used. Leave empty for unlimited.',
+      validation: (Rule) => Rule.min(1),
+    }),
+    defineField({
+      name: 'usedCount',
+      title: 'Used Count',
+      type: 'number',
+      description: 'Number of times this coupon has been used.',
+      initialValue: 0,
+      readOnly: true,
+    }),
   ],
 })

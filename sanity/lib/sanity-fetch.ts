@@ -45,6 +45,8 @@ export interface Coupon {
   code: string
   discountType: 'percentage' | 'fixed'
   discountValue: number
+  usageLimit?: number
+  usedCount?: number
 }
 
 const FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=600&q=80'

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from 'next-sanity'
 
 interface OrderItem {
   name: string
@@ -137,6 +138,33 @@ export async function POST(req: NextRequest) {
     }
 
     const orderNumber = `RV-${Date.now().toString(36).toUpperCase()}`
+
+    // Increment coupon usage count if a coupon was used
+    if (order.couponCode) {
+      try {
+        const writeClient = createClient({
+          projectId: process.env.NEXT_PUBLIC_SANITY_PROJECT_ID,
+          dataset: process.env.NEXT_PUBLIC_SANITY_DATASET,
+          apiVersion: '2024-05-01',
+          token: 'skICzOYwnvoY6YqpLneVnP58iHAxgtx9qvNGret7mtHsOUHrZidHAYuJktDuFe9AQoylJC1cwVE6JKtiA8GQmNqjYBoAX2HuR6GdpQ5eqSqCjTLO4onXeaeDvDKx3mCMJ00aAhlGYPtjDHgAhWnfU7huUW9H6kOv5k2B3n5zUXPO5QiryoAZ',
+          useCdn: false,
+        })
+
+        // Fetch the coupon document by code (case-insensitive search can be complex in GROQ, so we fetch all and find, or just match exactly. Since validateCoupon Action ensures exact or handles case, let's fetch active coupons)
+        const coupons = await writeClient.fetch(`*[_type == "coupon" && isActive == true]`, {}, { cache: 'no-store' })
+        const coupon = coupons.find((c: any) => c.code && c.code.toUpperCase() === order.couponCode?.toUpperCase())
+
+        if (coupon) {
+          await writeClient
+            .patch(coupon._id)
+            .setIfMissing({ usedCount: 0 })
+            .inc({ usedCount: 1 })
+            .commit()
+        }
+      } catch (err) {
+        console.error('Failed to increment coupon usage count:', err)
+      }
+    }
 
     return NextResponse.json({
       success: true,
