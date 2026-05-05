@@ -122,6 +122,8 @@ export default function HeroSection() {
             </span>
           </h1>
 
+
+
           {/* CTA buttons */}
           <div className="flex justify-center items-center">
             <Link

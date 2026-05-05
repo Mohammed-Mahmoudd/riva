@@ -7,7 +7,7 @@ import { useCart } from "../context/CartContext";
 import { type Coupon } from "@/sanity/lib/sanity-fetch";
 import { validateCouponAction } from "../actions/validateCoupon";
 
-type PaymentMethod = "cod" | "vodafone_cash" | "etisalat_cash";
+type PaymentMethod = "cod" | "vodafone_cash" | "etisalat_cash" | "instapay";
 
 const paymentMethods: {
   id: PaymentMethod;
@@ -43,6 +43,16 @@ const paymentMethods: {
     instructions:
       "Transfer the total amount to the number below. Your order will only be shipped after the transfer is verified.",
     senderFieldLabel: "Your Etisalat Cash Number (Sender)",
+  },
+  {
+    id: "instapay",
+    label: "InstaPay",
+    icon: "⚡",
+    description: "Instant transfer via InstaPay",
+    storeAccount: "riva.accessories@instapay", // Replace with actual InstaPay username
+    instructions:
+      "Transfer the total amount to our InstaPay address below. Your order will be shipped after the transfer is verified.",
+    senderFieldLabel: "Your InstaPay Address or Name (Sender)",
   },
 ];
 
@@ -374,7 +384,7 @@ export default function CheckoutPage() {
                         className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        Phone Number (WhatsApp)
+                        Phone Number (رقم الموبايل)
                       </label>
                       <input
                         type="tel"
@@ -406,7 +416,7 @@ export default function CheckoutPage() {
                         className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        First Name
+                        First Name (الاسم الأول)
                       </label>
                       <input
                         type="text"
@@ -426,7 +436,7 @@ export default function CheckoutPage() {
                         className={labelClass}
                         style={{ color: "var(--riva-charcoal)" }}
                       >
-                        Last Name
+                        Last Name (اسم العائلة)
                       </label>
                       <input
                         type="text"
@@ -447,7 +457,7 @@ export default function CheckoutPage() {
                       className={labelClass}
                       style={{ color: "var(--riva-charcoal)" }}
                     >
-                      Address
+                      Full Address & Governorate (العنوان والمحافظة)
                     </label>
                     <input
                       type="text"
@@ -456,7 +466,7 @@ export default function CheckoutPage() {
                       onChange={(e) => updateField("address", e.target.value)}
                       className={`${inputClass} ${errors.address ? "border-red-400 focus:border-red-500" : ""}`}
                       style={{ borderColor: errors.address ? undefined : "var(--riva-cream)" }}
-                      placeholder="Street address, building, apartment"
+                      placeholder="Street address, building, apartment, governorate..."
                     />
                     {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
                   </div>

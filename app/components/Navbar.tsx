@@ -7,15 +7,38 @@ import { useWishlist } from "../context/WishlistContext";
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { getCartCount } = useCart();
   const { getWishlistCount } = useWishlist();
 
   useEffect(() => {
+    let lastScrollY = window.scrollY;
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      const currentScrollY = window.scrollY;
+      
+      // Handle iOS rubber-banding at the top
+      if (currentScrollY <= 0) {
+        setIsVisible(true);
+        setIsScrolled(false);
+        lastScrollY = currentScrollY;
+        return;
+      }
+
+      setIsScrolled(currentScrollY > 30);
+
+      // Hide on scroll down, show on scroll up with a 5px threshold for mobile touch stability
+      if (currentScrollY < lastScrollY - 5) {
+        setIsVisible(true);
+      } else if (currentScrollY > lastScrollY + 5 && currentScrollY > 100) {
+        setIsVisible(false);
+      }
+      
+      lastScrollY = currentScrollY;
     };
-    window.addEventListener("scroll", handleScroll);
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -46,6 +69,7 @@ export default function Navbar() {
         <div className="marquee-content">
           {[...Array(3)].map((_, i) => (
             <span key={i} className="flex gap-20">
+              <span className="font-bold text-[var(--riva-charcoal)]">💍 Free Ring Gift With EVERY Order!</span>
               <span>✨ Free Shipping on Orders Over EGP 50</span>
               <span>🎀 New Spring Collection Available Now</span>
               <span>💎 Use Code RIVA15 for 15% Off</span>
@@ -56,9 +80,9 @@ export default function Navbar() {
 
       {/* Main Navbar */}
       <nav
-        className={`sticky top-0 z-50 transition-all duration-500 ${
+        className={`sticky top-0 z-50 transition-all duration-300 ${
           isScrolled ? "glass shadow-lg py-3" : "bg-white/95 py-4"
-        }`}
+        } ${isVisible ? "translate-y-0" : "-translate-y-full"}`}
       >
         <div className="container-riva flex items-center justify-between">
           {/* Logo */}
@@ -182,7 +206,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Toggle */}
             <button
-              className="md:hidden p-2 rounded-full transition-all duration-300 hover:bg-[var(--riva-blush)]"
+              className="md:hidden p-2 rounded-full transition-all duration-300 hover:bg-[var(--riva-blush)] relative z-50 cursor-pointer touch-manipulation"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -225,7 +249,7 @@ export default function Navbar() {
       {/* Mobile Menu Drawer */}
       <div
         className={`fixed top-0 right-0 z-50 h-full w-[280px] bg-white shadow-2xl transform transition-transform duration-500 ease-[var(--ease-smooth)] md:hidden ${
-          isMobileMenuOpen ? "translate-x-0" : "translate-x-full"
+          isMobileMenuOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"
         }`}
       >
         <div className="flex flex-col h-full p-8">
@@ -255,7 +279,7 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="py-4 text-lg font-medium tracking-wide border-b transition-colors duration-300 hover:text-[var(--riva-rose)] hover:pl-2"
+                className="block py-4 text-lg font-medium tracking-wide border-b transition-colors duration-300 hover:text-[var(--riva-rose)] hover:pl-2 touch-manipulation"
                 style={{
                   color: "var(--riva-charcoal)",
                   borderColor: "var(--riva-cream)",

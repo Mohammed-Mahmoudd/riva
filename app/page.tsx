@@ -3,13 +3,16 @@ import {
   fetchFeaturedProducts,
   fetchNewArrivals,
   fetchAllCategories,
+  fetchProductsByCategory,
 } from "@/sanity/lib/sanity-fetch";
 
 export default async function Home() {
-  const [featured, newArrivals, categories] = await Promise.all([
+  const [featured, newArrivals, categories, watches, handfans] = await Promise.all([
     fetchFeaturedProducts(),
     fetchNewArrivals(),
     fetchAllCategories(),
+    fetchProductsByCategory("Watch"),
+    fetchProductsByCategory("Hand Fan"),
   ]);
 
   const websiteJsonLd = {
@@ -35,6 +38,8 @@ export default async function Home() {
         featured={featured}
         newArrivals={newArrivals}
         categories={categories}
+        watches={watches}
+        handfans={handfans}
       />
     </>
   );

@@ -21,11 +21,21 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic"; // Ensure random shuffle runs on every request
+
 export default async function ShopPage() {
   const [products, categories] = await Promise.all([
     fetchAllProducts(),
     fetchAllCategories(),
   ]);
 
-  return <ShopContent products={products} categories={categories} />;
+  // The "Fresh Feed" Shuffle Algorithm (Fisher-Yates)
+  // This guarantees customers see a different mix of products every time they visit the shop
+  const shuffledProducts = [...products];
+  for (let i = shuffledProducts.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledProducts[i], shuffledProducts[j]] = [shuffledProducts[j], shuffledProducts[i]];
+  }
+
+  return <ShopContent products={shuffledProducts} categories={categories} />;
 }

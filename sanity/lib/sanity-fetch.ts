@@ -6,6 +6,7 @@ import {
   newArrivalsQuery,
   allCategoriesQuery,
   allCouponsQuery,
+  productsByCategoryQuery,
 } from './queries'
 import type { Product } from '@/app/data/products'
 import type { Category } from '@/app/data/categories'
@@ -128,4 +129,9 @@ export async function fetchAllCategories(): Promise<Category[]> {
 
 export async function fetchAllCoupons(): Promise<Coupon[]> {
   return await client.fetch(allCouponsQuery)
+}
+
+export async function fetchProductsByCategory(categoryName: string): Promise<Product[]> {
+  const raw: SanityProduct[] = await client.fetch(productsByCategoryQuery, { categoryName })
+  return (raw ?? []).map(transformProduct)
 }
