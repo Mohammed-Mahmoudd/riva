@@ -45,7 +45,6 @@ The platform delivers a refined, feminine shopping experience — organized by c
 | **Styling** | Soft feminine design system — fluid typography, warm palette |
 | **Content** | Sanity CMS — product catalogue, categories, inventory |
 | **Commerce** | Cart · Wishlist · WhatsApp Checkout · Order Tracking |
-| **Domain** | [itsriva.com](https://itsriva.com) |
 | **Region** | Egypt — Cairo |
 
 </div>
