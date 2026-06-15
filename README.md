@@ -117,13 +117,6 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <br/>
 
-## `◈` &nbsp; Collections
-
-<div align="center">
-
-`Necklaces` &nbsp;·&nbsp; `Bracelets` &nbsp;·&nbsp; `Rings` &nbsp;·&nbsp; `Bangles` &nbsp;·&nbsp; `Earrings` &nbsp;·&nbsp; `Hand Fans` &nbsp;·&nbsp; `Watches`
-
-</div>
 
 <br/>
 
