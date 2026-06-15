@@ -113,7 +113,7 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <br/>
 
-[![VISIT RIVA](https://img.shields.io/badge/◈%20VISIT%20RIVA-3d0a2a?style=for-the-badge&logoColor=f9d4e8&labelColor=6b1a4a)]([https://itsriva.com](https://riva-black.vercel.app/)](https://riva-black.vercel.app/))
+[![VISIT RIVA](https://riva-black.vercel.app/))
 
 <br/>
 
