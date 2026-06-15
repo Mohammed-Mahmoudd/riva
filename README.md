@@ -1,12 +1,17 @@
 <div align="center">
 
 <!-- Animated Header Banner -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a0010,50:3d0a2a,100:6b1a4a&height=200&section=header&text=RIVA&fontSize=80&fontColor=f9d4e8&fontAlignY=38&desc=Premium%20Accessories%20for%20Women%20%26%20Girls&descSize=16&descAlignY=62&animation=fadeIn&fontFamily=georgia" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a0010,50:3d0a2a,100:6b1a4a&height=200&section=header&text=RIVA&fontSize=80&fontColor=f9d4e8&fontAlignY=38&desc=Premium%20Accessories%20for%20Women&descSize=16&descAlignY=62&animation=fadeIn&fontFamily=georgia" width="100%"/>
 
 <!-- Typing Animation -->
 <a href="https://itsriva.com">
   <img src="https://readme-typing-svg.demolab.com?font=Cormorant+Garamond&size=22&duration=3000&pause=1000&color=D4849A&center=true&vCenter=true&width=600&lines=Accessorize+Your+Elegance.;Curated+Luxury+Accessories.;Earrings.+Necklaces.+Bracelets.+More." alt="Typing SVG" />
 </a>
+
+<br/>
+
+<!-- Hero Image -->
+<img src="https://raw.githubusercontent.com/Mohammed-Mahmoudd/riva/master/Hero.png" width="100%" alt="RIVA — Premium Accessories"/>
 
 <br/>
 
