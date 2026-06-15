@@ -10,8 +10,7 @@
 
 <br/>
 
-<!-- Hero Image -->
-<img src="https://raw.githubusercontent.com/Mohammed-Mahmoudd/riva/master/Hero.png" width="100%" alt="RIVA — Premium Accessories"/>
+
 
 <br/>
 
