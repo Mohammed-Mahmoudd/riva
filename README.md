@@ -180,8 +180,8 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 
 
-Developed by [Mohammed Mahmoud](https://mohammed-mahmoud.com)
 
-</sub>
+
+
 
 </div>
