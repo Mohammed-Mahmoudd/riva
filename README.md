@@ -113,7 +113,7 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <br/>
 
-[![VISIT RIVA](https://riva-black.vercel.app/))
+
 
 <br/>
 
