@@ -107,21 +107,6 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <br/>
 
-## `◈` &nbsp; Live
-
-<div align="center">
-
-<br/>
-
-
-
-<br/>
-
-*Curating beautiful accessories for the modern woman.*
-
-</div>
-
-<br/>
 
 
 
