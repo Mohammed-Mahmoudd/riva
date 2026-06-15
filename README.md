@@ -178,7 +178,7 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <sub>
 
-© 2026 **RIVA** — All Rights Reserved. &nbsp;|&nbsp; [itsriva.com](https://itsriva.com)
+
 
 Developed by [Mohammed Mahmoud](https://mohammed-mahmoud.com)
 
