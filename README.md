@@ -4,7 +4,7 @@
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:1a0010,50:3d0a2a,100:6b1a4a&height=200&section=header&text=RIVA&fontSize=80&fontColor=f9d4e8&fontAlignY=38&desc=Premium%20Accessories%20for%20Women&descSize=16&descAlignY=62&animation=fadeIn&fontFamily=georgia" width="100%"/>
 
 <!-- Typing Animation -->
-<a href="https://itsriva.com">
+<a href="https://[itsriva.com](https://riva-black.vercel.app/)">
   <img src="https://readme-typing-svg.demolab.com?font=Cormorant+Garamond&size=22&duration=3000&pause=1000&color=D4849A&center=true&vCenter=true&width=600&lines=Accessorize+Your+Elegance.;Curated+Luxury+Accessories.;Earrings.+Necklaces.+Bracelets.+More." alt="Typing SVG" />
 </a>
 
@@ -113,7 +113,7 @@ A signature ring gifted with every purchase — built into the experience, not a
 
 <br/>
 
-[![VISIT RIVA](https://img.shields.io/badge/◈%20VISIT%20RIVA-3d0a2a?style=for-the-badge&logoColor=f9d4e8&labelColor=6b1a4a)](https://itsriva.com)
+[![VISIT RIVA](https://img.shields.io/badge/◈%20VISIT%20RIVA-3d0a2a?style=for-the-badge&logoColor=f9d4e8&labelColor=6b1a4a)]([https://itsriva.com](https://riva-black.vercel.app/)](https://riva-black.vercel.app/))
 
 <br/>
 
